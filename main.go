@@ -44,6 +44,8 @@ func Worker(in <-chan int64, out chan<- int64) {
 		}
 		// отправляем считанное значение в выходной канал
 		out <- val
+		// without time.Sleep() // ~ 500 000
+		time.Sleep(time.Millisecond)
 	}
 }
 
@@ -61,6 +63,7 @@ func main() {
 	// генерируем числа, считая параллельно их количество и сумму
 	go Generator(ctx, chIn, func(i int64) {
 		/*
+			// работает и через sync.Mutex и через atomic. проверено
 			mu.Lock()
 			defer mu.Unlock()
 			inputSum += i
@@ -82,8 +85,8 @@ func main() {
 	// amounts — слайс, в который собирается статистика по горутинам
 	amounts := make([]int64, NumOut)
 	// chOut — канал, в который будут отправляться числа из каналов (*** а было горутин) `outs[i]`
-	chOut := make(chan int64, NumOut)
-	// chOut := make(chan int64) // *** а так будет работать?
+	// chOut := make(chan int64, NumOut)
+	chOut := make(chan int64) // *** а так будет работать? // работает. проверено. чуть помедленнее но работает
 
 	var wg sync.WaitGroup
 
